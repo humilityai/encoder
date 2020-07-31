@@ -14,7 +14,7 @@ import (
 // The empty string is ALWAYS the 0-vector.
 // It will also allow for string values to be decoded.
 type OneHot struct {
-	encoder map[string]int
+	encoder sam.MapStringInt
 	decoder sam.SliceString
 }
 
@@ -26,7 +26,7 @@ type OneHot struct {
 // or a 1.
 func NewOneHot() *OneHot {
 	e := &OneHot{
-		encoder: make(map[string]int),
+		encoder: make(sam.MapStringInt),
 		decoder: make(sam.SliceString, 0),
 	}
 
@@ -99,40 +99,32 @@ func (e *OneHot) Dimension() int {
 
 // MarshalJSON ...
 func (e *OneHot) MarshalJSON() ([]byte, error) {
-	// TODO: implement
-	return json.Marshal(e.encoder)
+	return json.Marshal(e.decoder)
 }
 
 // UnmarshalJSON ...
 func (e *OneHot) UnmarshalJSON(data []byte) error {
-	// TODO: implement
+	s := make(sam.SliceString, 0)
+	err := json.Unmarshal(data, &s)
+	if err != nil {
+		return err
+	}
 
-	// m := make(map[string]int)
-	// err := json.Unmarshal(data, &m)
-	// if err != nil {
-	// 	return err
-	// }
+	encoder := make(sam.MapStringInt)
+	for i, v := range s {
+		encoder[v] = i + 1
+	}
 
-	// decoder := make(slices.SliceString, len(m), len(m))
-	// for value, code := range m {
-	// 	if code >= len(m) || code < 0 {
-	// 		return fmt.Errorf("value %+v with code %+v falls outside bounds", value, code)
-	// 	}
-
-	// 	decoder[code] = value
-	// }
-
-	// e = &Ordinal{
-	// 	encoder: m,
-	// 	decoder: decoder,
-	// }
+	e = &OneHot{
+		encoder: encoder,
+		decoder: s,
+	}
 
 	return nil
 }
 
 // MarshalCSV ...
 func (e *OneHot) MarshalCSV() ([]byte, error) {
-	// TODO: implement
 	var lines [][]string
 
 	// header
@@ -155,32 +147,30 @@ func (e *OneHot) MarshalCSV() ([]byte, error) {
 
 // UnmarshalCSV ...
 func (e *OneHot) UnmarshalCSV(data []byte) error {
-	// TODO: implement
-
 	var b bytes.Buffer
 	_, err := b.Write(data)
 	if err != nil {
 		return err
 	}
 
-	// r := csv.NewReader(&b)
-	// lines, err := r.ReadAll()
-	// if err != nil {
-	// 	return err
-	// }
+	r := csv.NewReader(&b)
+	lines, err := r.ReadAll()
+	if err != nil {
+		return err
+	}
 
-	// s := lines[1:]
-	// decoder := make(slices.SliceString, len(s), len(s))
-	// for _, line := range s {
-	// 	if len(line) == 2 {
-	// 		code, err := strconv.Atoi(line[1])
-	// 		if err == nil {
-	// 			e.encoder[line[0]] = code
-	// 			decoder[code] = line[0]
-	// 		}
-	// 	}
-	// }
-	// e.decoder = decoder
+	s := lines[1:]
+	decoder := make(sam.SliceString, len(s), len(s))
+	for _, line := range s {
+		if len(line) == 2 {
+			code, err := strconv.Atoi(line[1])
+			if err == nil {
+				e.encoder[line[0]] = code
+				decoder[code-1] = line[0]
+			}
+		}
+	}
+	e.decoder = decoder
 
 	return nil
 }
