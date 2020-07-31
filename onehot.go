@@ -1,0 +1,209 @@
+package encoder
+
+import (
+	"bytes"
+	"encoding/csv"
+	"encoding/json"
+	"strconv"
+
+	"github.com/humilityai/sam"
+)
+
+// OneHot will encode string values into
+// a unique one-hot vector (binary vector with a single 1).
+// The empty string is ALWAYS the 0-vector.
+// It will also allow for string values to be decoded.
+type OneHot struct {
+	encoder map[string]int
+	decoder sam.SliceString
+}
+
+// NewOneHot will return a one-hot encoder
+// that will set the empty string as the first
+// dimension of every one-hot binary codeword.
+// "Binary" here means that every value in the
+// codeword (integer slice) will be either a 0
+// or a 1.
+func NewOneHot() *OneHot {
+	e := &OneHot{
+		encoder: make(map[string]int),
+		decoder: make(sam.SliceString, 0),
+	}
+
+	// set empty string as first dimension
+	e.Encode("")
+
+	return e
+}
+
+// Encode will return the integer slice that represents
+// the binary encoding of the given string argument.
+// If the string argument does not already have a code
+// it will generate a new codeword for the given string
+// argument and add it to the encoder.
+func (e *OneHot) Encode(s string) []uint8 {
+	_, ok := e.encoder[s]
+	if !ok {
+		e.decoder = append(e.decoder, s)
+		e.encoder[s] = len(e.decoder)
+
+		return e.code(s)
+	}
+
+	return e.code(s)
+}
+
+// Decode will return the string for the given binary
+// codeword (one-hot code).
+// If the codeword argument is longer than the encoders codewords
+// then an `ErrLength` error will be returned.
+func (e *OneHot) Decode(code []uint8) (string, error) {
+	if len(code) > len(e.decoder) {
+		return "", ErrLength
+	}
+
+	var dim int
+	for i, v := range code {
+		if v == 1 {
+			dim = i
+			break
+		}
+	}
+
+	return e.decoder[dim], nil
+}
+
+// Contains will check if a string has been assigned
+// a one-hot code or not.
+func (e *OneHot) Contains(s string) bool {
+	_, ok := e.encoder[s]
+	return ok
+}
+
+// ContainsCode will check if a codeword is a valid
+// codeword or not.
+func (e *OneHot) ContainsCode(code []uint8) bool {
+	if len(e.decoder) > len(code) {
+		return false
+	}
+
+	return containsOne(code)
+}
+
+// Dimension returns the current dimension of
+// each one-hot codeword. The dimension increases
+// with every new string that gets encoded.
+func (e *OneHot) Dimension() int {
+	return len(e.decoder)
+}
+
+// MarshalJSON ...
+func (e *OneHot) MarshalJSON() ([]byte, error) {
+	// TODO: implement
+	return json.Marshal(e.encoder)
+}
+
+// UnmarshalJSON ...
+func (e *OneHot) UnmarshalJSON(data []byte) error {
+	// TODO: implement
+
+	// m := make(map[string]int)
+	// err := json.Unmarshal(data, &m)
+	// if err != nil {
+	// 	return err
+	// }
+
+	// decoder := make(slices.SliceString, len(m), len(m))
+	// for value, code := range m {
+	// 	if code >= len(m) || code < 0 {
+	// 		return fmt.Errorf("value %+v with code %+v falls outside bounds", value, code)
+	// 	}
+
+	// 	decoder[code] = value
+	// }
+
+	// e = &Ordinal{
+	// 	encoder: m,
+	// 	decoder: decoder,
+	// }
+
+	return nil
+}
+
+// MarshalCSV ...
+func (e *OneHot) MarshalCSV() ([]byte, error) {
+	// TODO: implement
+	var lines [][]string
+
+	// header
+	lines = append(lines, []string{"value", "code"})
+
+	for value, code := range e.encoder {
+		line := []string{value, strconv.Itoa(code)}
+		lines = append(lines, line)
+	}
+
+	var b bytes.Buffer
+	w := csv.NewWriter(&b)
+	err := w.WriteAll(lines)
+	if err != nil {
+		return []byte{}, err
+	}
+
+	return b.Bytes(), nil
+}
+
+// UnmarshalCSV ...
+func (e *OneHot) UnmarshalCSV(data []byte) error {
+	// TODO: implement
+
+	var b bytes.Buffer
+	_, err := b.Write(data)
+	if err != nil {
+		return err
+	}
+
+	// r := csv.NewReader(&b)
+	// lines, err := r.ReadAll()
+	// if err != nil {
+	// 	return err
+	// }
+
+	// s := lines[1:]
+	// decoder := make(slices.SliceString, len(s), len(s))
+	// for _, line := range s {
+	// 	if len(line) == 2 {
+	// 		code, err := strconv.Atoi(line[1])
+	// 		if err == nil {
+	// 			e.encoder[line[0]] = code
+	// 			decoder[code] = line[0]
+	// 		}
+	// 	}
+	// }
+	// e.decoder = decoder
+
+	return nil
+}
+
+func (e *OneHot) code(s string) (code []uint8) {
+	code = make([]uint8, len(e.decoder), len(e.decoder))
+	dim := e.encoder[s]
+
+	code[dim] = 1
+	return
+}
+
+func containsOne(code []uint8) bool {
+	contains := false
+	for _, v := range code {
+		if v == 1 {
+			if contains {
+				return false
+			}
+
+			contains = true
+		}
+	}
+
+	return contains
+}
