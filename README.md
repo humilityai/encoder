@@ -1,5 +1,7 @@
 # `encoder` package
 
+PRs welcome!
+
 Catgorical variable encoders
 
 - `Ordinal`
@@ -8,4 +10,17 @@ Catgorical variable encoders
 - `RollingFrequency`
 - `James-Stein` (target encoder)
 
+## TODO
 
+- WOE
+- LOO
+- Catboost
+
+### Serializations
+
+- Protobuf
+- Flatbuf
+- Parquet
+- XML
+
+open to other suggestions ...
