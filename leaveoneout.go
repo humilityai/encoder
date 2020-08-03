@@ -14,10 +14,24 @@
 
 package encoder
 
-import "errors"
+// LeaveOneOut ...
+type LeaveOneOut struct {
+	// TODO: implement
+}
 
-var (
-	ErrBounds       = errors.New("index out of bounds")
-	ErrLength       = errors.New("code length does not match encoder length")
-	ErrTargetLength = errors.New("target data is not same length as categorical data")
-)
+func NewLeaveOneOut() *LeaveOneOut {
+	// TODO: implement
+	return &LeaveOneOut{}
+}
+
+// Encode ...
+func (e *LeaveOneOut) Encode(s string) int {
+	// TODO: implement
+	return 0
+}
+
+// Decode ...
+func (e *LeaveOneOut) Decode(code int) (string, error) {
+	// TODO: implement
+	return "", nil
+}

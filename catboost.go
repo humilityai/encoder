@@ -14,10 +14,25 @@
 
 package encoder
 
-import "errors"
+// CatBoost ...
+type CatBoost struct {
+	// TODO: implement
+}
 
-var (
-	ErrBounds       = errors.New("index out of bounds")
-	ErrLength       = errors.New("code length does not match encoder length")
-	ErrTargetLength = errors.New("target data is not same length as categorical data")
-)
+// NewCatBoost ...
+func NewCatBoost() *CatBoost {
+	// TODO: implement
+	return &CatBoost{}
+}
+
+// Encode ...
+func (e *CatBoost) Encode(s string) int {
+	// TODO: implement
+	return 0
+}
+
+// Decode ...
+func (e *CatBoost) Decode(code int) (string, error) {
+	// TODO: implement
+	return "", nil
+}

@@ -1,4 +1,4 @@
-// Copyright 2020 Hummility AI Incorporated, All Rights Reserved.
+// Copyright 2020 Humility AI Incorporated, All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -23,8 +23,6 @@ import (
 	"strconv"
 
 	"github.com/humilityai/sam"
-
-	"github.com/humilityai/slices"
 )
 
 // Ordinal will encode string values into
@@ -33,14 +31,14 @@ import (
 // It will also allow for string values to be decoded.
 type Ordinal struct {
 	encoder map[string]int
-	decoder slices.SliceString
+	decoder sam.SliceString
 }
 
 // NewOrdinal ...
 func NewOrdinal() *Ordinal {
 	e := &Ordinal{
 		encoder: make(map[string]int),
-		decoder: make(slices.SliceString, 0),
+		decoder: make(sam.SliceString, 0),
 	}
 
 	// set empty string as 0
@@ -118,7 +116,7 @@ func (e *Ordinal) Length() int {
 }
 
 // List ...
-func (e *Ordinal) List() slices.SliceString {
+func (e *Ordinal) List() sam.SliceString {
 	return e.decoder
 }
 
@@ -135,7 +133,7 @@ func (e *Ordinal) UnmarshalJSON(data []byte) error {
 		return err
 	}
 
-	decoder := make(slices.SliceString, len(m), len(m))
+	decoder := make(sam.SliceString, len(m), len(m))
 	for value, code := range m {
 		if code >= len(m) || code < 0 {
 			return fmt.Errorf("value %+v with code %+v falls outside bounds", value, code)
@@ -189,7 +187,7 @@ func (e *Ordinal) UnmarshalCSV(data []byte) error {
 	}
 
 	s := lines[1:]
-	decoder := make(slices.SliceString, len(s), len(s))
+	decoder := make(sam.SliceString, len(s), len(s))
 	for _, line := range s {
 		if len(line) == 2 {
 			code, err := strconv.Atoi(line[1])
