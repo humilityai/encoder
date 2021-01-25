@@ -1,4 +1,4 @@
-github.com/humilityai/math v0.0.0-20200801010805-20d6fafa1f83 h1:2ZrZQhHj7i4iQRuIixpuw6XL//Br/VNxTMvxGg6U+mE=
-github.com/humilityai/math v0.0.0-20200801010805-20d6fafa1f83/go.mod h1:vWYPE/7axq/zgxFv3Qp4NIIMnuifH+aEg4u5VFlCxno=
-github.com/humilityai/sam v0.0.0-20200802071131-caaf6da81c3a h1:3PFELMKKReVdHXEhA86yQdltRsxy+kedTs44NrfN29o=
-github.com/humilityai/sam v0.0.0-20200802071131-caaf6da81c3a/go.mod h1:3lcbohskk67+ehDhtWmT+DZduMLzhXEjT11Q6cg8Dfs=
+github.com/humilityai/math v0.0.0-20200803033757-480d44b783d6 h1:sYlXK/dhWAlUVMTBuOKIHOZH8K467aRylYJzsgNxW8U=
+github.com/humilityai/math v0.0.0-20200803033757-480d44b783d6/go.mod h1:vWYPE/7axq/zgxFv3Qp4NIIMnuifH+aEg4u5VFlCxno=
+github.com/humilityai/sam v0.0.0-20200926070415-163d9ceca42a h1:7zekMAHjTZbio+pvpFhED5KdaqGXiV9ghwhFJilc0Ng=
+github.com/humilityai/sam v0.0.0-20200926070415-163d9ceca42a/go.mod h1:E5V7+sMsy+QSHGqRH0uJcbeHjYHkGgVI8z/B9mUEZdE=
