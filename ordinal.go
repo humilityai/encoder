@@ -30,19 +30,24 @@ import (
 // The empty string is ALWAYS the 0 value.
 // It will also allow for string values to be decoded.
 type Ordinal struct {
-	encoder map[string]int
+	encoder map[string]uint
 	decoder sam.SliceString
 }
 
-// NewOrdinal ...
-func NewOrdinal() *Ordinal {
+// NewOrdinal will create a new ordinal encoder.
+// If the `init` boolean is specified as true,
+// then the encoder will intialize with the
+// empty string `""` encoded as the `0` value.
+func NewOrdinal(init bool) *Ordinal {
 	e := &Ordinal{
-		encoder: make(map[string]int),
+		encoder: make(map[string]uint),
 		decoder: make(sam.SliceString, 0),
 	}
 
 	// set empty string as 0
-	e.Encode("")
+	if init {
+		e.Encode("")
+	}
 
 	return e
 }
@@ -64,11 +69,11 @@ func (e *Ordinal) ContainsCode(code int) bool {
 }
 
 // Encode ...
-func (e *Ordinal) Encode(s string) int {
+func (e *Ordinal) Encode(s string) uint {
 	v, ok := e.encoder[s]
 	if !ok {
+		code := uint(len(e.decoder))
 		e.decoder = append(e.decoder, s)
-		code := len(e.decoder) - 1
 		e.encoder[s] = code
 		return code
 	}
@@ -78,8 +83,8 @@ func (e *Ordinal) Encode(s string) int {
 
 // Decode will return an empty string if supplied integer
 // argument is not a valid code.
-func (e *Ordinal) Decode(i int) string {
-	if i > len(e.decoder)-1 || i < 0 {
+func (e *Ordinal) Decode(i uint) string {
+	if i > uint(len(e.decoder)-1) || i < 0 {
 		return ""
 	}
 
@@ -93,7 +98,7 @@ func (e *Ordinal) Decode(i int) string {
 func (e *Ordinal) DecodeSlice(s sam.SliceInt) sam.SliceString {
 	values := make(sam.SliceString, len(s), len(s))
 	for i, v := range s {
-		values[i] = e.Decode(v)
+		values[i] = e.Decode(uint(v))
 	}
 
 	return values
@@ -101,8 +106,8 @@ func (e *Ordinal) DecodeSlice(s sam.SliceInt) sam.SliceString {
 
 // EncodeSlice will encode all the values in the slice of strings
 // provided as an argument.
-func (e *Ordinal) EncodeSlice(s sam.SliceString) sam.SliceInt {
-	codes := make(sam.SliceInt, len(s), len(s))
+func (e *Ordinal) EncodeSlice(s sam.SliceString) []uint {
+	codes := make([]uint, len(s), len(s))
 	for i, v := range s {
 		codes[i] = e.Encode(v)
 	}
@@ -127,7 +132,7 @@ func (e *Ordinal) MarshalJSON() ([]byte, error) {
 
 // UnmarshalJSON ...
 func (e *Ordinal) UnmarshalJSON(data []byte) error {
-	m := make(map[string]int)
+	m := make(map[string]uint)
 	err := json.Unmarshal(data, &m)
 	if err != nil {
 		return err
@@ -135,7 +140,7 @@ func (e *Ordinal) UnmarshalJSON(data []byte) error {
 
 	decoder := make(sam.SliceString, len(m), len(m))
 	for value, code := range m {
-		if code >= len(m) || code < 0 {
+		if code >= uint(len(m)) || code < 0 {
 			return fmt.Errorf("value %+v with code %+v falls outside bounds", value, code)
 		}
 
@@ -158,7 +163,7 @@ func (e *Ordinal) MarshalCSV() ([]byte, error) {
 	lines = append(lines, []string{"value", "code"})
 
 	for value, code := range e.encoder {
-		line := []string{value, strconv.Itoa(code)}
+		line := []string{value, strconv.Itoa(int(code))}
 		lines = append(lines, line)
 	}
 
@@ -192,7 +197,7 @@ func (e *Ordinal) UnmarshalCSV(data []byte) error {
 		if len(line) == 2 {
 			code, err := strconv.Atoi(line[1])
 			if err == nil {
-				e.encoder[line[0]] = code
+				e.encoder[line[0]] = uint(code)
 				decoder[code] = line[0]
 			}
 		}
