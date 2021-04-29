@@ -270,6 +270,9 @@ func (e *Ordinal) UnmarshalCSV(data []byte) error {
 
 // GobEncode ...
 func (e *Ordinal) GobEncode() ([]byte, error) {
+	e.Lock()
+	defer e.Unlock()
+
 	var buf bytes.Buffer
 
 	enc := gob.NewEncoder(&buf)
