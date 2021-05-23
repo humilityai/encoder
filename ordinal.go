@@ -21,6 +21,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"hash/fnv"
+	"io"
 	"strconv"
 	"sync"
 
@@ -232,22 +233,22 @@ func (e *Ordinal) MarshalCSV() ([]byte, error) {
 
 // UnmarshalCSV ...
 func (e *Ordinal) UnmarshalCSV(data []byte) error {
-	var b bytes.Buffer
-	_, err := b.Write(data)
-	if err != nil {
-		return err
-	}
+	r := csv.NewReader(bytes.NewReader(data))
 
-	r := csv.NewReader(&b)
-	lines, err := r.ReadAll()
-	if err != nil {
-		return err
-	}
+	decoder := make(sam.SliceString, 0)
+	for i := 0; ; i++ {
+		if i == 0 {
+			_, err := r.Read()
+			if err != nil && err != io.EOF {
+				return err
+			}
+			continue
+		}
 
-	s := lines[1:]
-	decoder := make(sam.SliceString, len(s), len(s))
-	for _, line := range s {
-		if len(line) == 2 {
+		line, err := r.Read()
+		if err == io.EOF {
+			break
+		} else if err == nil {
 			code, err := strconv.Atoi(line[1])
 			if err == nil {
 				hasher := fnv.New64a()
@@ -257,12 +258,19 @@ func (e *Ordinal) UnmarshalCSV(data []byte) error {
 				}
 				hashedKey := hasher.Sum64()
 				e.encoder[hashedKey] = uint64(code)
+				if code > len(decoder)-1 {
+					newCap := len(decoder) + (code - (len(decoder) - 1))
+					newArray := make(sam.SliceString, newCap, newCap)
+					copy(newArray, decoder)
+					decoder = newArray
+				}
 				decoder[code] = line[0]
 			} else {
 				return err
 			}
 		}
 	}
+
 	e.decoder = decoder
 
 	return nil
